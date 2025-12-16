@@ -1,23 +1,32 @@
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
+require("dotenv").config();
 const connectDB = require("./config/database");
-
-dotenv.config();
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
-app.use(cors());
+// 🔐 CORS – permite front local y el de Vercel
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",          // desarrollo front
+      "https://tu-dominio-vercel.vercel.app", // cámbialo por el real
+    ],
+  })
+);
+
 app.use(express.json());
 
-// Conectar BD
-connectDB();
-
 // Rutas
-app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/auth", authRoutes);
 
+// Puerto
 const PORT = process.env.PORT || 4000;
 
-app.listen(PORT, () => {
+// Conectar BD y luego levantar servidor
+connectDB().then(() => {
+  app.listen(PORT, () => {
     console.log(`Servidor corriendo en puerto ${PORT}`);
+  });
 });
